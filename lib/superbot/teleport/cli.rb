@@ -1,6 +1,5 @@
 require 'sinatra'
 require 'excon'
-require 'pry'
 
 module Superbot
   module Teleport
