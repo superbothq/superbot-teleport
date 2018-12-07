@@ -1,3 +1,5 @@
+require "clamp"
+
 require_relative "teleport/version"
 require_relative "teleport/cli"
 
