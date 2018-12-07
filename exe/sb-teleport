@@ -3,7 +3,8 @@
 
 STDOUT.sync = true
 
+require "superbot"
+require "superbot/cloud"
 require_relative "../lib/superbot/teleport"
 
-cli = Superbot::Teleport::CLI.new
-cli.start!
+cli = ::Superbot::CLI::TeleportCommand.run
