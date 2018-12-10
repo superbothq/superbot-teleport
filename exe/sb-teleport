@@ -7,4 +7,4 @@ require "superbot"
 require "superbot/cloud"
 require_relative "../lib/superbot/teleport"
 
-cli = ::Superbot::CLI::TeleportCommand.run
+Superbot::Teleport::CLI::RootCommand.run
