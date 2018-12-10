@@ -2,7 +2,7 @@
 
 set -e
 
-VERSION=$(exe/sb-teleport --version)
+VERSION=$(superbot teleport --version)
 GEM_FILE="superbot-teleport-$VERSION.gem"
 
 gem uninstall -a -x superbot-teleport
@@ -11,13 +11,11 @@ gem uninstall -a -x superbot-teleport
 
 gem build superbot-teleport
 gem install superbot-teleport-$VERSION.gem
-VERSION_INSTALLED=$(sb-teleport --version)
+VERSION_INSTALLED=$(superbot teleport --version)
 
 if [ "$VERSION" != "$VERSION_INSTALLED" ]; then
   echo "!version"
   exit 1
 fi
-
-sb-teleport
 
 echo "ok"
