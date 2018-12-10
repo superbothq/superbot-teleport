@@ -41,7 +41,7 @@ module Superbot
             raise "DELETE may not contain body" if method == :delete && opts[:body]
             opts[:headers] ||= {}
 
-            unless settings.webdriver_url.include? "localhost"
+            unless settings.webdriver_type == 'local'
               path = "wd/hub/#{request_path(params)}"
               headers["Content-Type"] = "application/json"
             else

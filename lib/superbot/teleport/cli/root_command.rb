@@ -24,6 +24,8 @@ module Superbot
           puts 'Configure your remote webdriver to http://localhost:4567/wd/hub', ''
           puts 'Press [control+c] to exit', ''
 
+          @chromedriver = Kommando.run_async 'chromedriver-helper --silent --port=9515' if browser == 'local'
+
           @web = Superbot::Web.run!(webdriver_type: browser, region: region)
         ensure
           close_teleport
@@ -31,6 +33,7 @@ module Superbot
 
         def close_teleport
           @web&.quit!
+          @chromedriver&.kill
         end
       end
     end
