@@ -22,14 +22,12 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_runtime_dependency "excon"
-  spec.add_runtime_dependency "clamp", "1.2.1"
-  spec.add_runtime_dependency "kommando", "~> 0.1"
 
   spec.add_development_dependency "bundler", "~> 1.17"
   spec.add_development_dependency "rake", "~> 11.2"
   spec.add_development_dependency "rspec", "~> 3.8"
   spec.add_development_dependency "pry"
-  spec.add_development_dependency "superbot", "~> 0.1.28"
 
+  spec.add_development_dependency "superbot", "~> 0.1.28"
   spec.add_development_dependency "superbot-selenium-webdriver"
 end
