@@ -28,9 +28,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 1.17"
   spec.add_development_dependency "rake", "~> 11.2"
   spec.add_development_dependency "rspec", "~> 3.8"
-  spec.add_development_dependency "guard"
-  spec.add_development_dependency "guard-process"
-  spec.add_development_dependency "guard-bundler"
   spec.add_development_dependency "pry"
   spec.add_development_dependency "superbot", "~> 0.1.28"
 
