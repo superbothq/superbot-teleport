@@ -24,7 +24,10 @@ module Superbot
           puts 'Configure your remote webdriver to http://localhost:4567/wd/hub', ''
           puts 'Press [control+c] to exit', ''
 
-          @chromedriver = Kommando.run_async 'chromedriver-helper --silent --port=9515' if browser == 'local'
+          if browser == 'local'
+            chromedriver_path = Chromedriver::Helper.new.binary_path
+            @chromedriver = Kommando.run_async "#{chromedriver_path} --silent --port=9515 --url-base=wd/hub"
+          end
 
           @web = Superbot::Web.run!(webdriver_type: browser, region: region)
         ensure
