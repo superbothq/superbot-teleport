@@ -40,13 +40,8 @@ module Superbot
           def proxy(method, params, opts={})
             raise "DELETE may not contain body" if method == :delete && opts[:body]
             opts[:headers] ||= {}
-
-            unless settings.webdriver_type == 'local'
-              path = "wd/hub/#{request_path(params)}"
-              headers["Content-Type"] = "application/json"
-            else
-              path = request_path
-            end
+            path = "wd/hub/#{request_path(params)}"
+            headers["Content-Type"] = "application/json"
 
             settings.connection.request({method: method, path: path}.merge(opts))
           end
