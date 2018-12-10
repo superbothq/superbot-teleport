@@ -21,16 +21,13 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency "sinatra"
   spec.add_runtime_dependency "excon"
 
   spec.add_development_dependency "bundler", "~> 1.17"
   spec.add_development_dependency "rake", "~> 11.2"
   spec.add_development_dependency "rspec", "~> 3.8"
-  spec.add_development_dependency "guard"
-  spec.add_development_dependency "guard-process"
-  spec.add_development_dependency "guard-bundler"
   spec.add_development_dependency "pry"
 
+  spec.add_development_dependency "superbot", "~> 0.1.28"
   spec.add_development_dependency "superbot-selenium-webdriver"
 end

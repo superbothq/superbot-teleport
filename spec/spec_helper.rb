@@ -1,4 +1,5 @@
 require "bundler/setup"
+require "superbot"
 require "superbot/teleport"
 
 RSpec.configure do |config|
