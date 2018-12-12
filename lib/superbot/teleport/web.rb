@@ -4,16 +4,12 @@ require 'json'
 module Superbot
   module Teleport
     module Web
-      def self.register(sinatra, webdriver_type: 'cloud', region: nil)
+      def self.registered(sinatra)
         sinatra.before do
           $__superbot_teleport_request_for_errors = request
         end
 
         user_auth_creds = Superbot::Cloud.credentials&.slice(:username, :token) || {}
-
-        sinatra.set :webdriver_type, webdriver_type
-        sinatra.set :webdriver_url, Superbot.webdriver_endpoint(webdriver_type)
-        sinatra.set :region, region
 
         sinatra.set :connection, (
           Excon.new sinatra.webdriver_url, {
