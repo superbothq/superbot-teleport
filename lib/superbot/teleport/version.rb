@@ -1,5 +1,5 @@
 module Superbot
   module Teleport
-    VERSION = "0.2.4"
+    VERSION = "0.2.5"
   end
 end

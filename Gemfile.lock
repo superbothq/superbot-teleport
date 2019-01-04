@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    superbot-teleport (0.2.4)
+    superbot-teleport (0.2.5)
       excon
 
 GEM
@@ -105,4 +105,4 @@ DEPENDENCIES
   superbot-teleport!
 
 BUNDLED WITH
-   1.17.1
+   1.17.2
