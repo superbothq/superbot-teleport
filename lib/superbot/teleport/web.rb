@@ -58,6 +58,8 @@ module Superbot
           when "session"
             parsed_body = safe_parse_json request.body, on_error: {}
 
+            parsed_body['organization_name'] = settings.organization
+
             if settings.region && parsed_body.dig('desiredCapabilities', 'superOptions', 'region').nil?
               parsed_body['desiredCapabilities'] ||= {}
               parsed_body['desiredCapabilities']['superOptions'] ||= {}

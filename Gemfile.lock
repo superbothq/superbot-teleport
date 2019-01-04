@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    superbot-teleport (0.2.3)
+    superbot-teleport (0.2.4)
       excon
 
 GEM
@@ -28,12 +28,12 @@ GEM
     marcel (0.3.3)
       mimemagic (~> 0.3.2)
     method_source (0.9.2)
-    mimemagic (0.3.2)
-    mini_portile2 (2.3.0)
+    mimemagic (0.3.3)
+    mini_portile2 (2.4.0)
     multipart-post (2.0.0)
     mustermann (1.0.3)
-    nokogiri (1.8.5)
-      mini_portile2 (~> 2.3.0)
+    nokogiri (1.9.1)
+      mini_portile2 (~> 2.4.0)
     pry (0.12.2)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
@@ -65,20 +65,28 @@ GEM
       rack-protection (= 2.0.4)
       tilt (~> 2.0)
     sinatra-silent (0.0.1)
-    superbot (0.1.30)
+    superbot (0.2.2)
       clamp (= 1.2.1)
       kommando (~> 0.1)
       launchy (= 2.4.3)
       sinatra (= 2.0.4)
       sinatra-silent (= 0.0.1)
-      superbot-cloud (~> 0.1.20)
-      superbot-selenium-webdriver (~> 1.0.1)
-      superbot-teleport (~> 0.2.2)
+      superbot-cloud (~> 0.2.0)
+      superbot-record
+      superbot-runner
+      superbot-selenium-webdriver (~> 1.0.5)
+      superbot-teleport (~> 0.2.3)
       zaru (= 0.2.0)
-    superbot-cloud (0.1.21)
+    superbot-cloud (0.2.0)
       marcel (= 0.3.3)
       multipart-post (= 2.0.0)
-    superbot-selenium-webdriver (1.0.1)
+    superbot-record (0.1.0)
+      superbot-record-chrome
+    superbot-record-chrome (0.1.0)
+    superbot-runner (0.1.1)
+      superbot-runner-side
+    superbot-runner-side (0.1.0)
+    superbot-selenium-webdriver (1.0.5)
       chromedriver-helper (= 2.1.0)
       selenium-webdriver (= 3.141.0)
     tilt (2.0.9)
@@ -92,7 +100,7 @@ DEPENDENCIES
   pry
   rake (~> 11.2)
   rspec (~> 3.8)
-  superbot (~> 0.1.30)
+  superbot (~> 0.2.2)
   superbot-selenium-webdriver (~> 1.0.1)
   superbot-teleport!
 

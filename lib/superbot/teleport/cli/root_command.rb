@@ -16,6 +16,7 @@ module Superbot
           validates_browser_type browser
         end
         option ['--region'], 'REGION', 'Region for remote webdriver'
+        option ['--org'], 'ORGANIZATION', 'Name of organization to take action', attribute_name: :organization
 
         def execute
           require_login unless browser == 'local'
@@ -29,7 +30,7 @@ module Superbot
             @chromedriver = Kommando.run_async "#{chromedriver_path} --silent --port=9515 --url-base=wd/hub"
           end
 
-          @web = Superbot::Web.run!(webdriver_type: browser, region: region)
+          @web = Superbot::Web.run!(webdriver_type: browser, region: region, organization: organization)
         ensure
           close_teleport
         end
