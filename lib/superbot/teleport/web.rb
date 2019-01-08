@@ -21,7 +21,6 @@ module Superbot
             write_timeout: 5,
           }
         )
-        sinatra.set :organization, nil
 
         sinatra.helpers do
           def request_path(params)
