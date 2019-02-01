@@ -11,16 +11,16 @@ module Superbot
 
         user_auth_creds = Superbot::Cloud.credentials&.slice(:username, :token) || {}
 
-        sinatra.set :connection, (
-          Excon.new sinatra.webdriver_url, {
-            user: user_auth_creds[:username],
-            password: user_auth_creds[:token],
-            persistent: true,
-            connect_timeout: 3,
-            read_timeout: 5,
-            write_timeout: 5,
-          }
+        sinatra.set :connection, Excon.new(
+          sinatra.webdriver_url,
+          user: user_auth_creds[:username],
+          password: user_auth_creds[:token],
+          persistent: true,
+          connect_timeout: 3,
+          read_timeout: 500,
+          write_timeout: 500
         )
+        sinatra.set :current_session, nil
 
         sinatra.helpers do
           def request_path(params)
@@ -39,18 +39,18 @@ module Superbot
             path = "wd/hub/#{request_path(params)}"
             headers["Content-Type"] = "application/json"
 
-            settings.connection.request({method: method, path: path}.merge(opts))
+            settings.connection.request({ method: method, path: path }.merge(opts))
           end
 
           def respond(upstream)
-            headers = upstream.headers
+            headers upstream.headers
             status upstream.status
             upstream.body
           end
         end
 
         sinatra.get "/wd/hub/*" do
-          respond proxy(:get, params, {headers: headers, body: request.body})
+          respond proxy(:get, params, headers: headers, body: request.body)
         end
 
         sinatra.post "/wd/hub/*" do
@@ -58,22 +58,39 @@ module Superbot
           when "session"
             parsed_body = safe_parse_json request.body, on_error: {}
 
-            parsed_body['organization_name'] = settings.organization
+            parsed_body['organization_name'] = settings.teleport_options[:organization]
 
-            if settings.region && parsed_body.dig('desiredCapabilities', 'superOptions', 'region').nil?
+            if settings.teleport_options[:region] && parsed_body.dig('desiredCapabilities', 'superOptions', 'region').nil?
               parsed_body['desiredCapabilities'] ||= {}
               parsed_body['desiredCapabilities']['superOptions'] ||= {}
-              parsed_body['desiredCapabilities']['superOptions']['region'] ||= settings.region
+              parsed_body['desiredCapabilities']['superOptions']['region'] ||= settings.teleport_options[:region]
             end
 
-            respond proxy(:post, params, {headers: headers, body: parsed_body.to_json, read_timeout: 500})
+            unless settings.teleport_options[:reuse] && settings.current_session
+              settings.current_session = proxy(
+                :post,
+                params,
+                headers: headers,
+                body: parsed_body.to_json,
+                write_timeout: 500,
+                read_timeout: 500
+              )
+            end
+
+            respond settings.current_session
           else
-            respond proxy(:post, params, {headers: headers, body: request.body})
+            respond proxy(:post, params, headers: headers, body: request.body)
           end
         end
 
         sinatra.delete "/wd/hub/*" do
-          respond proxy(:delete, params, {headers: headers})
+          if settings.teleport_options[:reuse]
+            puts "Skipping DELETE, keep session open"
+            halt 204
+          else
+            settings.current_session = nil
+            respond proxy(:delete, params, headers: headers)
+          end
         end
 
         sinatra.error Excon::Error::Socket do
@@ -86,6 +103,20 @@ module Superbot
           else
             raise "unknown: #{$!.message}"
           end
+        end
+
+        at_exit do
+          return unless sinatra.settings.current_session
+
+          puts nil, "Removing active session..."
+          session_id = JSON.parse(sinatra.settings.current_session.body)['sessionId']
+          sinatra.settings.connection.request(
+            method: :delete,
+            path: "wd/hub/session/#{session_id}",
+            headers: { 'Content-Type' => 'application/json' }
+          )
+        rescue => e
+          puts e.message
         end
       end
     end
