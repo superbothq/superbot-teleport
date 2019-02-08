@@ -14,12 +14,14 @@ module Superbot
         end
 
         option ['--browser'], 'BROWSER', "Browser type to use. Can be either local or cloud", default: 'cloud'
-        option ['--region'], 'REGION', 'Region for remote webdriver'
-        option ['--org'], 'ORGANIZATION', 'Name of organization to take action', attribute_name: :organization
-        option ['--reuse'], :flag, "Reuse existing session"
+        option ['--region'], 'REGION', "Region for remote webdriver"
+        option ['--org'], 'ORGANIZATION', "Name of organization to take action on", environment_variable: "SUPERBOT_ORG", attribute_name: :organization
+        option ['--ignore-delete'], :flag, "Reuse existing session"
+        option ['--keep-session'], :flag, "Keep session when teleport closing"
+        option ['--session'], 'SESSION', "Session to use in teleport"
 
         def execute
-          validate_teleport_options(browser, organization)
+          validate_teleport_options(browser, organization, session)
 
           run_local_chromedriver if browser == 'local'
 
@@ -31,7 +33,9 @@ module Superbot
             webdriver_type: browser,
             region: region,
             organization: organization,
-            reuse: reuse?
+            ignore_delete: session || ignore_delete?,
+            keep_session: session || keep_session?,
+            session: session
           )
 
           at_exit do

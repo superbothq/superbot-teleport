@@ -20,7 +20,6 @@ module Superbot
           read_timeout: 500,
           write_timeout: 500
         )
-        sinatra.set :current_session, nil
 
         sinatra.helpers do
           def request_path(params)
@@ -56,18 +55,22 @@ module Superbot
         sinatra.post "/wd/hub/*" do
           case request_path(params)
           when "session"
-            parsed_body = safe_parse_json request.body, on_error: {}
+            if settings.teleport_options[:session]
+              status 200
+              headers 'Content-Type' => 'application/json'
+              return { 'sessionId': settings.teleport_options[:session] }.to_json
+            else
+              parsed_body = safe_parse_json request.body, on_error: {}
 
-            parsed_body['organization_name'] = settings.teleport_options[:organization]
+              parsed_body['organization_name'] = settings.teleport_options[:organization]
 
-            if settings.teleport_options[:region] && parsed_body.dig('desiredCapabilities', 'superOptions', 'region').nil?
-              parsed_body['desiredCapabilities'] ||= {}
-              parsed_body['desiredCapabilities']['superOptions'] ||= {}
-              parsed_body['desiredCapabilities']['superOptions']['region'] ||= settings.teleport_options[:region]
-            end
+              if settings.teleport_options[:region] && parsed_body.dig('desiredCapabilities', 'superOptions', 'region').nil?
+                parsed_body['desiredCapabilities'] ||= {}
+                parsed_body['desiredCapabilities']['superOptions'] ||= {}
+                parsed_body['desiredCapabilities']['superOptions']['region'] ||= settings.teleport_options[:region]
+              end
 
-            unless settings.teleport_options[:reuse] && settings.current_session
-              settings.current_session = proxy(
+              session_response = proxy(
                 :post,
                 params,
                 headers: headers,
@@ -75,20 +78,21 @@ module Superbot
                 write_timeout: 500,
                 read_timeout: 500
               )
-            end
+              settings.teleport_options[:session] = JSON.parse(session_response.body)['sessionId']
 
-            respond settings.current_session
+              respond session_response
+            end
           else
             respond proxy(:post, params, headers: headers, body: request.body)
           end
         end
 
         sinatra.delete "/wd/hub/*" do
-          if settings.teleport_options[:reuse]
+          if settings.teleport_options[:ignore_delete]
             puts "Skipping DELETE, keep session open"
             halt 204
           else
-            settings.current_session = nil
+            settings.teleport_options[:session] = nil
             respond proxy(:delete, params, headers: headers)
           end
         end
@@ -106,13 +110,12 @@ module Superbot
         end
 
         at_exit do
-          return unless sinatra.settings.current_session
+          return if sinatra.teleport_options[:session] && sinatra.settings.teleport_options[:keep_session]
 
           puts nil, "Removing active session..."
-          session_id = JSON.parse(sinatra.settings.current_session.body)['sessionId']
           sinatra.settings.connection.request(
             method: :delete,
-            path: "wd/hub/session/#{session_id}",
+            path: "wd/hub/session/#{sinatra.teleport_options[:session]}",
             headers: { 'Content-Type' => 'application/json' }
           )
         rescue => e
