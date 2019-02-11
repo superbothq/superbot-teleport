@@ -9,13 +9,21 @@ module Superbot
           $__superbot_teleport_request_for_errors = request
         end
 
-        user_auth_creds = Superbot::Cloud.credentials&.slice(:username, :token) || {}
+        auth_header = format(
+          '%<auth_type>s %<auth_token>s',
+          auth_type: ENV['SUPERBOT_TOKEN'] ? 'Bearer' : 'Basic',
+          auth_token: Base64.urlsafe_encode64(
+            ENV.fetch(
+              'SUPERBOT_TOKEN',
+              Superbot::Cloud.credentials&.values_at(:username, :token)&.join(':').to_s
+            )
+          )
+        )
 
         sinatra.set :connection, Excon.new(
           sinatra.webdriver_url,
-          user: user_auth_creds[:username],
-          password: user_auth_creds[:token],
           persistent: true,
+          headers: { 'Authorization' => auth_header, 'Content-Type' => 'application/json' },
           connect_timeout: 3,
           read_timeout: 500,
           write_timeout: 500
