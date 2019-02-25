@@ -15,7 +15,8 @@ module Superbot
 
         option ['--browser'], 'BROWSER', "Browser type to use. Can be either local or cloud", default: 'cloud'
         option ['--region'], 'REGION', "Region for remote webdriver"
-        option ['--org'], 'ORGANIZATION', "Name of organization to take action on", environment_variable: "SUPERBOT_ORG", attribute_name: :organization
+        option ['--org'], "ORGANIZATION", "Name of organization to take action on", environment_variable: "SUPERBOT_ORG", attribute_name: :organization, default: Superbot::Cloud.credentials&.fetch(:organization, nil)
+
         option ['--ignore-delete'], :flag, "Reuse existing session"
         option ['--keep-session'], :flag, "Keep session when teleport closing"
         option ['--session'], 'SESSION', "Session to use in teleport"
