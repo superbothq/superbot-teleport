@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    superbot-teleport (0.3.1)
+    superbot-teleport (0.3.2)
       excon
 
 GEM
