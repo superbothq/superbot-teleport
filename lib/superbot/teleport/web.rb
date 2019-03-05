@@ -61,10 +61,11 @@ module Superbot
 
               parsed_body['organization_name'] = settings.teleport_options[:organization]
 
-              if settings.teleport_options[:region] && parsed_body.dig('desiredCapabilities', 'superOptions', 'region').nil?
+              if settings.teleport_options[:region] || settings.teleport_options[:source]
                 parsed_body['desiredCapabilities'] ||= {}
                 parsed_body['desiredCapabilities']['superOptions'] ||= {}
                 parsed_body['desiredCapabilities']['superOptions']['region'] ||= settings.teleport_options[:region]
+                parsed_body['desiredCapabilities']['superOptions']['source'] ||= settings.teleport_options[:source]
               end
 
               session_response = proxy(
@@ -81,7 +82,13 @@ module Superbot
               respond session_response
             end
           else
-            respond proxy(:post, params, headers: headers, body: request.body)
+            parsed_body = safe_parse_json request.body, on_error: {}
+
+            if settings.teleport_options[:base_url] && parsed_body['url']
+              parsed_body['url'] = URI.join(settings.teleport_options[:base_url], parsed_body['url']).to_s
+            end
+
+            respond proxy(:post, params, headers: headers, body: parsed_body.to_json)
           end
         end
 
