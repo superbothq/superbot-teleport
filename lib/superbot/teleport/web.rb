@@ -74,7 +74,7 @@ module Superbot
                 body: parsed_body.to_json,
                 write_timeout: 500,
                 read_timeout: 500,
-                retry_interval: 5
+                retry_interval: 60
               )
               settings.teleport_options[:session] = JSON.parse(session_response.body)['sessionId']
 
