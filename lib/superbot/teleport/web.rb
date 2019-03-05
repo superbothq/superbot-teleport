@@ -35,7 +35,7 @@ module Superbot
             path = "wd/hub/#{request_path(params)}"
             headers["Content-Type"] = "application/json"
 
-            settings.connection.request({ method: method, path: path }.merge(opts))
+            settings.connection.request({ method: method, path: path, idempotent: true }.merge(opts))
           end
 
           def respond(upstream)
@@ -70,10 +70,11 @@ module Superbot
               session_response = proxy(
                 :post,
                 params,
-                headers: headers,
+                headers: headers.merge('Idempotency-Key' => SecureRandom.hex),
                 body: parsed_body.to_json,
                 write_timeout: 500,
-                read_timeout: 500
+                read_timeout: 500,
+                retry_interval: 60
               )
               settings.teleport_options[:session] = JSON.parse(session_response.body)['sessionId']
 
