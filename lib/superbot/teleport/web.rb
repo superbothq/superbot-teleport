@@ -87,7 +87,7 @@ module Superbot
             if settings.teleport_options[:base_url] && parsed_body['url']
               parsed_body['url'] = URI.join(
                 settings.teleport_options[:base_url],
-                URI(parsed_body['url']).path
+                URI(parsed_body['url']).path.to_s
               ).to_s
             end
 
