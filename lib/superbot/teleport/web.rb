@@ -85,7 +85,10 @@ module Superbot
             parsed_body = safe_parse_json request.body, on_error: {}
 
             if settings.teleport_options[:base_url] && parsed_body['url']
-              parsed_body['url'] = URI.join(settings.teleport_options[:base_url], parsed_body['url']).to_s
+              parsed_body['url'] = URI.join(
+                settings.teleport_options[:base_url],
+                URI(parsed_body['url']).path
+              ).to_s
             end
 
             respond proxy(:post, params, headers: headers, body: parsed_body.to_json)
