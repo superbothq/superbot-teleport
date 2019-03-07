@@ -21,7 +21,7 @@ module Superbot
         option ['--keep-session'], :flag, "Keep session after teleport is closed"
         option ['--session'], 'SESSION', "Session to use in teleport"
         option ['--base-url'], 'BASE_URL', "Base project URL"
-        option ['--source'], 'SOURCE', "Source deployment for webdriver session", environment_variable: "SUPERBOT_SOURCE"
+        option ['--tag'], 'TAG', "Deployment tag for webdriver session", environment_variable: "SUPERBOT_TAG"
 
         def execute
           validate_teleport_options(browser, organization, session)
@@ -40,7 +40,7 @@ module Superbot
             keep_session: session || keep_session?,
             session: session,
             base_url: base_url,
-            source: source
+            tag: tag
           )
 
           at_exit do

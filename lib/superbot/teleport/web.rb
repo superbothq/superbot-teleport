@@ -61,11 +61,11 @@ module Superbot
 
               parsed_body['organization_name'] = settings.teleport_options[:organization]
 
-              if settings.teleport_options[:region] || settings.teleport_options[:source]
+              if settings.teleport_options[:region] || settings.teleport_options[:tag]
                 parsed_body['desiredCapabilities'] ||= {}
                 parsed_body['desiredCapabilities']['superOptions'] ||= {}
                 parsed_body['desiredCapabilities']['superOptions']['region'] ||= settings.teleport_options[:region]
-                parsed_body['desiredCapabilities']['superOptions']['source'] ||= settings.teleport_options[:source]
+                parsed_body['desiredCapabilities']['superOptions']['tag'] ||= settings.teleport_options[:tag]
               end
 
               session_response = proxy(
