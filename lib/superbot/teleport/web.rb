@@ -43,6 +43,31 @@ module Superbot
             status upstream.status
             upstream.body
           end
+
+          def acquire_session(parsed_body: {}, headers: {})
+            assign_super_options(parsed_body)
+            proxy(
+              :post,
+              { splat: ['session'] },
+              headers: headers.merge('Idempotency-Key' => SecureRandom.hex),
+              body: parsed_body.to_json,
+              retry_interval: 60
+            ).tap do |session_response|
+              parsed_response = safe_parse_json session_response.body, on_error: {}
+              settings.teleport_options[:session] = parsed_response['sessionId']
+            end
+          end
+
+          def assign_super_options(parsed_body)
+            parsed_body['organization_name'] = settings.teleport_options[:organization]
+
+            if settings.teleport_options.slice(:region, :tag).compact.any?
+              parsed_body['desiredCapabilities'] ||= { 'browserName' => 'chrome' }
+              parsed_body['desiredCapabilities']['superOptions'] ||= {}
+              parsed_body['desiredCapabilities']['superOptions']['region'] ||= settings.teleport_options[:region]
+              parsed_body['desiredCapabilities']['superOptions']['tag'] ||= settings.teleport_options[:tag]
+            end
+          end
         end
 
         sinatra.get "/wd/hub/*" do
@@ -58,28 +83,7 @@ module Superbot
               return { 'sessionId': settings.teleport_options[:session] }.to_json
             else
               parsed_body = safe_parse_json request.body, on_error: {}
-
-              parsed_body['organization_name'] = settings.teleport_options[:organization]
-
-              if settings.teleport_options[:region] || settings.teleport_options[:tag]
-                parsed_body['desiredCapabilities'] ||= {}
-                parsed_body['desiredCapabilities']['superOptions'] ||= {}
-                parsed_body['desiredCapabilities']['superOptions']['region'] ||= settings.teleport_options[:region]
-                parsed_body['desiredCapabilities']['superOptions']['tag'] ||= settings.teleport_options[:tag]
-              end
-
-              session_response = proxy(
-                :post,
-                params,
-                headers: headers.merge('Idempotency-Key' => SecureRandom.hex),
-                body: parsed_body.to_json,
-                write_timeout: 500,
-                read_timeout: 500,
-                retry_interval: 60
-              )
-              settings.teleport_options[:session] = JSON.parse(session_response.body)['sessionId']
-
-              respond session_response
+              respond acquire_session(parsed_body: parsed_body, headers: headers)
             end
           else
             parsed_body = safe_parse_json request.body, on_error: {}
@@ -117,11 +121,35 @@ module Superbot
           end
         end
 
+        if sinatra.teleport_options[:acquire_session]
+          sinatra.connection.request(
+            method: :post,
+            path: 'wd/hub/session',
+            headers: { 'Content-Type' => 'application/json', 'Idempotency-Key' => SecureRandom.hex },
+            body: {
+              organization_name: sinatra.teleport_options[:organization],
+              desiredCapabilities: {
+                browserName: 'chrome',
+                superOptions: {
+                  tag: sinatra.teleport_options[:tag],
+                  region: sinatra.teleport_options[:region],
+                }.compact
+              }
+            }.to_json,
+            idempotent: true,
+            retry_interval: 60
+          ).tap do |session_response|
+            if session_response.status == 200
+              sinatra.teleport_options[:session] = JSON.parse(session_response.body)['sessionId']
+            end
+          end
+        end
+
         at_exit do
-          return if sinatra.teleport_options[:session] && sinatra.settings.teleport_options[:keep_session]
+          return if sinatra.teleport_options[:session] && sinatra.teleport_options[:keep_session]
 
           puts nil, "Removing active session..."
-          sinatra.settings.connection.request(
+          sinatra.connection.request(
             method: :delete,
             path: "wd/hub/session/#{sinatra.teleport_options[:session]}",
             headers: { 'Content-Type' => 'application/json' }

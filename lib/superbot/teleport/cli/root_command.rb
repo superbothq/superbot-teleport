@@ -22,6 +22,7 @@ module Superbot
         option ['--session'], 'SESSION', "Session to use in teleport"
         option ['--base-url'], 'BASE_URL', "Base project URL"
         option ['--tag'], 'TAG', "Deployment tag for webdriver session", environment_variable: "SUPERBOT_TAG"
+        option ['--acquire-session'], :flag, "Request session creation as soon as teleport open"
 
         def execute
           validate_teleport_options(browser, organization, session)
@@ -40,7 +41,8 @@ module Superbot
             keep_session: session || keep_session?,
             session: session,
             base_url: base_url,
-            tag: tag
+            tag: tag,
+            acquire_session: acquire_session?
           )
 
           at_exit do
