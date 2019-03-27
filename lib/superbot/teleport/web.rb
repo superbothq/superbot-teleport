@@ -146,7 +146,7 @@ module Superbot
         end
 
         at_exit do
-          return if sinatra.teleport_options[:session] && sinatra.teleport_options[:keep_session]
+          return if sinatra.teleport_options[:session].nil? || sinatra.teleport_options[:keep_session]
 
           puts nil, "Removing active session..."
           sinatra.connection.request(
