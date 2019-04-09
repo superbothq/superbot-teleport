@@ -62,7 +62,7 @@ module Superbot
             parsed_body['organization_name'] = settings.teleport_options[:organization]
 
             if settings.teleport_options.slice(:region, :tag).compact.any?
-              parsed_body['desiredCapabilities'] ||= { 'browserName' => 'chrome', 'pageLoadStrategy' => 'eager' }
+              parsed_body['desiredCapabilities'] ||= { 'browserName' => 'chrome' }
               parsed_body['desiredCapabilities']['superOptions'] ||= {}
               parsed_body['desiredCapabilities']['superOptions']['region'] ||= settings.teleport_options[:region]
               parsed_body['desiredCapabilities']['superOptions']['tag'] ||= settings.teleport_options[:tag]
@@ -80,7 +80,7 @@ module Superbot
             if settings.teleport_options[:session]
               status 200
               headers 'Content-Type' => 'application/json'
-              return { 'sessionId': settings.teleport_options[:session] }.to_json
+              return { sessionId: settings.teleport_options[:session], status: 0, value: nil }.to_json
             else
               parsed_body = safe_parse_json request.body, on_error: {}
               respond acquire_session(parsed_body: parsed_body, headers: headers)
@@ -102,7 +102,7 @@ module Superbot
         sinatra.delete "/wd/hub/*" do
           if settings.teleport_options[:ignore_delete]
             puts "Skipping DELETE, keep session open"
-            halt 204
+            return { sessionId: settings.teleport_options[:session], status: 0, value: nil }.to_json
           else
             settings.teleport_options[:session] = nil
             respond proxy(:delete, params, headers: headers)
@@ -130,7 +130,6 @@ module Superbot
               organization_name: sinatra.teleport_options[:organization],
               desiredCapabilities: {
                 browserName: 'chrome',
-                pageLoadStrategy: 'eager',
                 superOptions: {
                   tag: sinatra.teleport_options[:tag],
                   region: sinatra.teleport_options[:region],
